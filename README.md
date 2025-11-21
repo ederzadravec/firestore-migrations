@@ -15,6 +15,29 @@
 - ✅ **Seeds** - Popule dados iniciais facilmente
 - ✅ **Checksum Validation** - Detecta mudanças em migrations já executadas
 
+## ⚠️ Erro "Unexpected token '{'?"
+
+Se você receber este erro ao executar `npx firestore-migrations up`:
+
+```bash
+Erro: Unexpected token '{'
+error Command failed with exit code 1.
+```
+
+**Solução rápida:**
+
+```bash
+# Opção 1: Instalar ts-node (desenvolvimento)
+npm install --save-dev ts-node
+npx firestore-migrations up
+
+# Opção 2: Compilar migrations (produção)
+npx tsc migrations/**/*.ts --outDir migrations --module commonjs
+npx firestore-migrations up
+```
+
+📖 **[Ver Guia Completo de Solução](./docs/TYPESCRIPT-MIGRATIONS.md)**
+
 ## 🚀 Quick Start (3 minutos)
 
 ### 1️⃣ Instalar
@@ -96,6 +119,42 @@ npx firestore-migrations status                    # Ver status
 npx firestore-migrations list                      # Listar todas migrations
 ```
 
+### ⚡ TypeScript vs JavaScript
+
+As migrations são criadas em **TypeScript** por padrão. Para executá-las em produção, você tem **3 opções**:
+
+**Opção 1: Usar ts-node (desenvolvimento)** ✅ Recomendado para dev
+
+```bash
+npm install --save-dev ts-node
+npx firestore-migrations up
+```
+
+**Opção 2: Compilar migrations (produção)** ✅ Recomendado para produção
+
+```bash
+# Compile suas migrations
+npx tsc migrations/**/*.ts --outDir migrations --module commonjs
+
+# Execute normalmente
+npx firestore-migrations up
+```
+
+**Opção 3: Scripts do package.json**
+
+```json
+{
+  "scripts": {
+    "migrate:build": "tsc migrations/**/*.ts --outDir migrations --module commonjs",
+    "migrate:up": "npm run migrate:build && firestore-migrations up",
+    "migrate:up:dev": "ts-node -r tsconfig-paths/register ./node_modules/.bin/firestore-migrations up"
+  }
+}
+```
+
+> 💡 O CLI detecta automaticamente se você tem arquivos `.js` ou `.ts` e usa a versão apropriada.  
+> 📖 **Erro "Unexpected token '{'?"** Veja o [Guia Completo TypeScript/JavaScript](./docs/TYPESCRIPT-MIGRATIONS.md)
+
 ### Scripts no package.json (recomendado)
 
 Adicione ao seu `package.json`:
@@ -176,6 +235,7 @@ export const seed = {
   id: '20231121120000_initial_users',
   name: 'initial users',
   description: 'Cria usuários iniciais do sistema',
+  environments: ['all'], // 'all' para todos ambientes, ou ['development', 'production']
 
   async run(adapter: IFirestoreAdapter) {
     console.log('🌱 Criando usuários iniciais...')
@@ -195,11 +255,18 @@ export const seed = {
     })
     
     console.log('✅ 2 usuários criados')
+  },
+
+  async validate() {
+    // Opcional: validações antes de executar
+    return true
   }
 }
 
 export default seed
 ```
+
+> 💡 **Campo `environments`**: Use `['all']` para executar em todos ambientes, ou especifique ambientes como `['development']`, `['production']`, ou `['development', 'staging']`.
 
 ## ⚙️ Configuração (Opcional)
 

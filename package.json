@@ -1,11 +1,11 @@
 {
   "name": "@ederzadravec/firestore-migrations",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Sistema de migrations para Firestore - Framework agnostic e reutilizável",
   "main": "index.ts",
   "types": "index.ts",
   "bin": {
-    "firestore-migrations": "./cli/index.ts"
+    "firestore-migrations": "./dist/cli/index.js"
   },
   "scripts": {
     "build": "tsc",

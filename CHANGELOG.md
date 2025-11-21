@@ -2,6 +2,30 @@
 
 All notable changes to @ederzadravec/firestore-migrations will be documented in this file.
 
+## [1.0.1] - 2025-11-21
+
+### Fixed
+- 🐛 Fixed "Unexpected token '{'" error when running migrations
+  - MigrationLoader now automatically detects and prioritizes `.js` files over `.ts`
+  - Added clear error messages when TypeScript files are found without ts-node
+  - Improved TypeScript support with automatic ts-node registration when available
+  - Added comprehensive documentation in docs/TYPESCRIPT-MIGRATIONS.md
+
+- 🐛 Fixed seed template missing required `environments` field
+  - Seed templates now include `environments: ['all']` by default
+  - Added `validate()` function template for optional pre-execution validation
+  - Seeds now execute correctly without TypeScript errors
+
+- 🐛 Fixed migrations collection name mismatch
+  - Changed default collection from `'migrations'` to `'_migrations'` to match ConfigLoader
+  - All CLI functions now properly pass `migrationsCollection` from config
+  - Collection `_migrations` is now correctly created in Firestore
+
+### Added
+- 📖 Comprehensive TypeScript/JavaScript usage guide (docs/TYPESCRIPT-MIGRATIONS.md)
+- ✨ Better error messages with actionable solutions
+- 📝 Updated README with troubleshooting section
+
 ## [1.0.0] - 2025-01-21
 
 ### Added

@@ -232,6 +232,7 @@ export const seed = {
   id: '${timestamp}_${name}',
   name: '${name.replace(/_/g, " ")}',
   description: 'TODO: Adicione a descrição deste seed',
+  environments: ['all'], // 'all' para todos ambientes, ou ['development', 'production']
 
   async run(adapter: IFirestoreAdapter) {
     console.log('🌱 Executando seed: ${name}')
@@ -253,6 +254,11 @@ export const seed = {
     // })
     
     console.log('✅ Seed completo: ${name}')
+  },
+
+  async validate() {
+    // Opcional: validações antes de executar
+    return true
   }
 }
 
@@ -315,6 +321,7 @@ async function runMigrations() {
   const adapter = new FirebaseAdminAdapter(db);
   const service = new MigrationService({
     firestoreAdapter: adapter,
+    migrationsCollection: config.migrationsCollection,
   });
 
   const migrationsPath = ConfigLoader.resolvePath(config.migrationsPath);
@@ -360,6 +367,7 @@ async function rollbackMigration() {
   const adapter = new FirebaseAdminAdapter(db);
   const service = new MigrationService({
     firestoreAdapter: adapter,
+    migrationsCollection: config.migrationsCollection,
   });
 
   const migrationsPath = ConfigLoader.resolvePath(config.migrationsPath);
@@ -395,6 +403,7 @@ async function runSeeds() {
   const adapter = new FirebaseAdminAdapter(db);
   const service = new MigrationService({
     firestoreAdapter: adapter,
+    migrationsCollection: config.migrationsCollection,
   });
 
   const seedDir = ConfigLoader.resolvePath(config.seedsPath);
@@ -428,6 +437,7 @@ async function showStatus() {
   const adapter = new FirebaseAdminAdapter(db);
   const service = new MigrationService({
     firestoreAdapter: adapter,
+    migrationsCollection: config.migrationsCollection,
   });
 
   const migrationsPath = ConfigLoader.resolvePath(config.migrationsPath);

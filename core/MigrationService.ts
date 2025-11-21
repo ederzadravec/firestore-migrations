@@ -20,7 +20,7 @@ export class MigrationService {
   private readonly firestoreAdapter: IFirestoreAdapter
 
   constructor(config: IMigrationConfig) {
-    this.migrationsCollection = config.migrationsCollection || 'migrations'
+    this.migrationsCollection = config.migrationsCollection || '_migrations'
     this.firestoreAdapter = config.firestoreAdapter
   }
 
