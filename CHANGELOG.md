@@ -2,6 +2,15 @@
 
 All notable changes to @ederzadravec/firestore-migrations will be documented in this file.
 
+## [1.0.2] - 2025-11-21
+
+### Fixed
+- 🐛 Fixed package entry points to use compiled JavaScript files
+  - Changed `main` from `index.ts` to `dist/index.js`
+  - Changed `types` from `index.ts` to `dist/index.d.ts`
+  - Added `dist/` directory to published files
+  - Library now works correctly when installed via npm/yarn
+
 ## [1.0.1] - 2025-11-21
 
 ### Fixed
