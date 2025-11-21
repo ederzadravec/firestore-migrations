@@ -5,7 +5,7 @@
   "main": "index.ts",
   "types": "index.ts",
   "bin": {
-    "firestore-migrations": "./dist/cli/index.js"
+    "firestore-migrations": "dist/cli/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -37,7 +37,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ederzadravec/firestore-migrations"
+    "url": "git+https://github.com/ederzadravec/firestore-migrations.git"
   },
   "engines": {
     "node": ">=18.0.0"
