@@ -1,0 +1,71 @@
+{
+  "name": "@ederzadravec/firestore-migrations",
+  "version": "1.0.0",
+  "description": "Sistema de migrations para Firestore - Framework agnostic e reutilizável",
+  "main": "index.ts",
+  "types": "index.ts",
+  "bin": {
+    "firestore-migrations": "./cli/index.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node cli/index.ts",
+    "dev:init": "ts-node cli/index.ts init",
+    "dev:create": "ts-node cli/index.ts create migration",
+    "dev:up": "ts-node cli/index.ts up",
+    "dev:down": "ts-node cli/index.ts down",
+    "dev:status": "ts-node cli/index.ts status",
+    "test:local": "cd test-project && npx ts-node ../cli/index.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:integration": "jest --testMatch='**/integration/**/*.test.ts'",
+    "test:unit": "jest --testMatch='**/unit/**/*.test.ts'",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "firestore",
+    "migrations",
+    "firebase",
+    "database",
+    "schema",
+    "versioning",
+    "rollback",
+    "cli"
+  ],
+  "author": "Eder Zadravec <ederzadravec@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ederzadravec/firestore-migrations"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^20.19.25",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.5",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "typescript": ">=4.0.0"
+  },
+  "files": [
+    "core/",
+    "types/",
+    "templates/",
+    "cli/",
+    "examples/",
+    "docs/",
+    "index.ts",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "firebase-admin": "^13.6.0"
+  }
+}

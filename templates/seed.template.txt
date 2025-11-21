@@ -1,0 +1,31 @@
+/**
+ * Seed: {{NAME}}
+ *
+ * Description: {{DESCRIPTION}}
+ */
+
+import { ISeed, IFirestoreAdapter } from '../lib-migrations'
+
+export const seed: ISeed = {
+  id: '{{ID}}',
+  name: '{{NAME}}',
+  description: '{{DESCRIPTION}}',
+
+  // Environments where this seed should run
+  environments: ['test', 'homolog'], // or ['all']
+
+  async run(adapter: IFirestoreAdapter) {
+    console.log('Starting seed: {{NAME}}')
+
+    // TODO: Implement seed logic
+    // Example:
+    // await adapter.createItemWithId('collection_name', 'doc_id', { field: 'value' })
+
+    console.log('Seed completed')
+  },
+
+  async validate() {
+    // TODO: Add validation logic if needed
+    return true
+  },
+}

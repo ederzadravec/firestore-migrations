@@ -1,0 +1,38 @@
+/**
+ * Migration: {{NAME}}
+ *
+ * Description: {{DESCRIPTION}}
+ */
+
+import { IMigrationScript, IFirestoreAdapter } from '../lib-migrations'
+
+export const migration: IMigrationScript = {
+  id: '{{ID}}',
+  name: '{{NAME}}',
+  description: '{{DESCRIPTION}}',
+
+  async up(adapter: IFirestoreAdapter) {
+    console.log('Starting migration: {{NAME}}')
+
+    // TODO: Implement migration logic
+    // Example:
+    // await adapter.createItemWithId('collection_name', 'doc_id', { field: 'value' })
+
+    console.log('Migration completed')
+  },
+
+  async down(adapter: IFirestoreAdapter) {
+    console.log('Starting rollback: {{NAME}}')
+
+    // TODO: Implement rollback logic
+    // Example:
+    // await adapter.deleteItemById('collection_name', 'doc_id')
+
+    console.log('Rollback completed')
+  },
+
+  async validate() {
+    // TODO: Add validation logic if needed
+    return true
+  },
+}
