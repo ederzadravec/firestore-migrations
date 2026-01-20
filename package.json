@@ -1,6 +1,6 @@
 {
   "name": "@ederzadravec/firestore-migrations",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Sistema de migrations para Firestore - Framework agnostic e reutilizável",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

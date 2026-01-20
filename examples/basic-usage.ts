@@ -4,12 +4,15 @@
  * This example shows the most basic usage of the migration system
  */
 
-import { MigrationService, IMigrationScript, IFirestoreAdapter } from '../index'
+import { MigrationService, IMigrationScript, IFirestoreAdapter, IQueryOptions } from '../index'
 
 // 1. Create your Firestore adapter
 const myAdapter: IFirestoreAdapter = {
-  async getItems(collection) {
-    // Your implementation
+  async getItems(collection, options?: IQueryOptions) {
+    // Your implementation with optional filters
+    // options?.filters - array of { field, operator, value }
+    // options?.orderBy - { field, direction }
+    // options?.limit - max items to return
     return []
   },
   async getItemById(collection, id) {
@@ -21,10 +24,20 @@ const myAdapter: IFirestoreAdapter = {
     return id
   },
   async updateItemById(collection, id, data) {
-    // Your implementation
+    // Your implementation - update single document by ID
+  },
+  async updateItems(collection, data, options: IQueryOptions) {
+    // Your implementation - update multiple documents matching filters
+    // Returns number of updated documents
+    return 0
   },
   async deleteItemById(collection, id) {
-    // Your implementation
+    // Your implementation - delete single document by ID
+  },
+  async deleteItems(collection, options: IQueryOptions) {
+    // Your implementation - delete multiple documents matching filters
+    // Returns number of deleted documents
+    return 0
   },
 }
 
@@ -70,3 +83,35 @@ async function runMigration() {
 
 // Run it
 runMigration()
+
+// ============================================================================
+// Example: Using filters with the adapter
+// ============================================================================
+
+async function examplesWithFilters() {
+  // Get items with filters
+  const activeUsers = await myAdapter.getItems('users', {
+    filters: [
+      { field: 'status', operator: '==', value: 'active' },
+      { field: 'age', operator: '>=', value: 18 },
+    ],
+    orderBy: { field: 'createdAt', direction: 'desc' },
+    limit: 100,
+  })
+
+  // Update multiple items matching filters
+  const updatedCount = await myAdapter.updateItems(
+    'users',
+    { lastNotified: new Date() },
+    {
+      filters: [{ field: 'status', operator: '==', value: 'active' }],
+    }
+  )
+  console.log(`Updated ${updatedCount} active users`)
+
+  // Delete multiple items matching filters
+  const deletedCount = await myAdapter.deleteItems('sessions', {
+    filters: [{ field: 'expiresAt', operator: '<', value: new Date() }],
+  })
+  console.log(`Deleted ${deletedCount} expired sessions`)
+}

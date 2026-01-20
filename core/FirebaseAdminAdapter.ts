@@ -4,7 +4,7 @@
  */
 
 import * as admin from "firebase-admin";
-import { IFirestoreAdapter } from "../types";
+import { IFirestoreAdapter, IQueryOptions } from "../types";
 
 /**
  * Pre-built adapter for Firebase Admin SDK
@@ -17,8 +17,40 @@ export class FirebaseAdminAdapter implements IFirestoreAdapter {
     this.firestore = firestore || admin.firestore();
   }
 
-  async getItems<T>(collection: string): Promise<Array<T & { id: string }>> {
-    const snapshot = await this.firestore.collection(collection).get();
+  private applyFilters(
+    query: admin.firestore.Query,
+    options?: IQueryOptions
+  ): admin.firestore.Query {
+    let result = query;
+
+    if (options?.filters) {
+      for (const filter of options.filters) {
+        result = result.where(filter.field, filter.operator, filter.value);
+      }
+    }
+
+    if (options?.orderBy) {
+      result = result.orderBy(
+        options.orderBy.field,
+        options.orderBy.direction || "asc"
+      );
+    }
+
+    if (options?.limit) {
+      result = result.limit(options.limit);
+    }
+
+    return result;
+  }
+
+  async getItems<T>(
+    collection: string,
+    options?: IQueryOptions
+  ): Promise<Array<T & { id: string }>> {
+    let query: admin.firestore.Query = this.firestore.collection(collection);
+    query = this.applyFilters(query, options);
+
+    const snapshot = await query.get();
     return snapshot.docs.map((doc) => ({
       ...(doc.data() as T),
       id: doc.id,
@@ -60,5 +92,43 @@ export class FirebaseAdminAdapter implements IFirestoreAdapter {
 
   async deleteItemById(collection: string, id: string): Promise<any> {
     return await this.firestore.collection(collection).doc(id).delete();
+  }
+
+  async updateItems(
+    collection: string,
+    data: any,
+    options: IQueryOptions
+  ): Promise<number> {
+    let query: admin.firestore.Query = this.firestore.collection(collection);
+    query = this.applyFilters(query, options);
+
+    const snapshot = await query.get();
+    const batch = this.firestore.batch();
+    let count = 0;
+
+    snapshot.docs.forEach((doc) => {
+      batch.update(doc.ref, data);
+      count++;
+    });
+
+    await batch.commit();
+    return count;
+  }
+
+  async deleteItems(collection: string, options: IQueryOptions): Promise<number> {
+    let query: admin.firestore.Query = this.firestore.collection(collection);
+    query = this.applyFilters(query, options);
+
+    const snapshot = await query.get();
+    const batch = this.firestore.batch();
+    let count = 0;
+
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+      count++;
+    });
+
+    await batch.commit();
+    return count;
   }
 }

@@ -330,41 +330,96 @@ Pronto! A lib vai descobrir e usar automaticamente.
 Todas migrations e seeds recebem um `adapter` com estes métodos:
 
 ```typescript
+// Tipos de filtros suportados
+type FirestoreFilterOperator =
+  | '==' | '!=' | '<' | '<=' | '>' | '>='
+  | 'array-contains' | 'array-contains-any' | 'in' | 'not-in'
+
+interface IFirestoreFilter {
+  field: string
+  operator: FirestoreFilterOperator
+  value: any
+}
+
+interface IQueryOptions {
+  filters?: IFirestoreFilter[]
+  limit?: number
+  orderBy?: { field: string; direction?: 'asc' | 'desc' }
+}
+
 interface IFirestoreAdapter {
   // Buscar
-  getItems<T>(collection: string): Promise<T[]>
+  getItems<T>(collection: string, options?: IQueryOptions): Promise<T[]>
   getItemById<T>(collection: string, id: string): Promise<T>
-  
+
   // Criar
-  createItem(collection: string, data: any): Promise<string>
   createItemWithId(collection: string, id: string, data: any): Promise<string>
-  
+
   // Atualizar
   updateItemById(collection: string, id: string, data: any): Promise<void>
-  
+  updateItems(collection: string, data: any, options: IQueryOptions): Promise<number>
+
   // Deletar
-  deleteItemById(collection: string, id: string): Promise<void>
-  deleteItemProperty(collection: string, id: string, property: string): Promise<void>
-  
-  // Avançado
-  runTransaction(updateFunction: (transaction: any) => Promise<void>): Promise<void>
-  getDocument(path: string): Promise<any>
+  deleteItemById(collection: string, id: string): Promise<any>
+  deleteItems(collection: string, options: IQueryOptions): Promise<number>
 }
+```
+
+### Exemplos de uso com filtros
+
+```typescript
+// Buscar usuários ativos maiores de 18 anos
+const users = await adapter.getItems('users', {
+  filters: [
+    { field: 'status', operator: '==', value: 'active' },
+    { field: 'age', operator: '>=', value: 18 }
+  ],
+  orderBy: { field: 'createdAt', direction: 'desc' },
+  limit: 100
+})
+
+// Atualizar múltiplos documentos de uma vez
+const updatedCount = await adapter.updateItems(
+  'users',
+  { notifiedAt: new Date() },
+  { filters: [{ field: 'status', operator: '==', value: 'active' }] }
+)
+console.log(`${updatedCount} usuários atualizados`)
+
+// Deletar documentos expirados
+const deletedCount = await adapter.deleteItems('sessions', {
+  filters: [{ field: 'expiresAt', operator: '<', value: new Date() }]
+})
+console.log(`${deletedCount} sessões removidas`)
 ```
 
 ## 🎓 Casos de Uso
 
-### Adicionar campo em documentos existentes
+### Adicionar campo em documentos existentes (bulk)
 
 ```typescript
 async up(adapter) {
-  const users = await adapter.getItems('users')
-  for (const user of users) {
-    await adapter.updateItemById('users', user.id, {
-      status: 'active',
-      updatedAt: new Date()
-    })
-  }
+  // Usando updateItems para atualizar em lote (mais eficiente)
+  const count = await adapter.updateItems(
+    'users',
+    { status: 'active', updatedAt: new Date() },
+    { filters: [] } // filtros vazios = todos os documentos
+  )
+  console.log(`${count} usuários atualizados`)
+}
+```
+
+### Adicionar campo apenas em documentos específicos
+
+```typescript
+async up(adapter) {
+  // Atualiza apenas usuários pendentes
+  const count = await adapter.updateItems(
+    'users',
+    { status: 'active', updatedAt: new Date() },
+    { filters: [{ field: 'status', operator: '==', value: 'pending' }] }
+  )
+  console.log(`${count} usuários pendentes atualizados`)
 }
 ```
 
@@ -373,7 +428,7 @@ async up(adapter) {
 ```typescript
 async up(adapter) {
   const oldUsers = await adapter.getItems('users_old')
-  
+
   for (const user of oldUsers) {
     await adapter.createItemWithId('users', user.id, {
       name: user.full_name,  // rename
@@ -396,6 +451,44 @@ async up(adapter) {
       payments: false
     }
   })
+}
+```
+
+### Limpar dados antigos
+
+```typescript
+async up(adapter) {
+  // Remove todas as sessões expiradas
+  const deleted = await adapter.deleteItems('sessions', {
+    filters: [{ field: 'expiresAt', operator: '<', value: new Date() }]
+  })
+  console.log(`${deleted} sessões expiradas removidas`)
+}
+```
+
+### Buscar e processar com filtros complexos
+
+```typescript
+async up(adapter) {
+  // Busca usuários premium inativos há mais de 30 dias
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+  const inactiveUsers = await adapter.getItems('users', {
+    filters: [
+      { field: 'plan', operator: '==', value: 'premium' },
+      { field: 'lastLogin', operator: '<', value: thirtyDaysAgo }
+    ],
+    orderBy: { field: 'lastLogin', direction: 'asc' }
+  })
+
+  // Processa cada usuário
+  for (const user of inactiveUsers) {
+    await adapter.updateItemById('users', user.id, {
+      status: 'inactive',
+      inactiveSince: new Date()
+    })
+  }
 }
 ```
 

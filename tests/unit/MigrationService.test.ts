@@ -1,17 +1,20 @@
 /**
  * Testes do MigrationService
+ *
+ * Usa InMemoryAdapter para testar a lógica do serviço.
+ * Para testes do FirebaseAdminAdapter, veja: FirebaseAdminAdapter.test.ts
  */
 
 import { MigrationService } from '../../core/MigrationService';
-import { MockFirestoreAdapter } from '../mocks/MockFirestoreAdapter';
+import { InMemoryAdapter } from '../mocks/InMemoryAdapter';
 import { IMigrationScript } from '../../types';
 
 describe('MigrationService', () => {
-  let adapter: MockFirestoreAdapter;
+  let adapter: InMemoryAdapter;
   let service: MigrationService;
 
   beforeEach(() => {
-    adapter = new MockFirestoreAdapter();
+    adapter = new InMemoryAdapter();
     service = new MigrationService({
       firestoreAdapter: adapter,
       migrationsCollection: '_migrations_test',

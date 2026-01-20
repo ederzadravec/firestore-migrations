@@ -129,13 +129,51 @@ export interface IMigrationConfig {
 }
 
 /**
+ * Filter operator types supported by Firestore
+ */
+export type FirestoreFilterOperator =
+  | '=='
+  | '!='
+  | '<'
+  | '<='
+  | '>'
+  | '>='
+  | 'array-contains'
+  | 'array-contains-any'
+  | 'in'
+  | 'not-in'
+
+/**
+ * Single filter condition for Firestore queries
+ */
+export interface IFirestoreFilter {
+  field: string
+  operator: FirestoreFilterOperator
+  value: any
+}
+
+/**
+ * Options for query operations
+ */
+export interface IQueryOptions {
+  filters?: IFirestoreFilter[]
+  limit?: number
+  orderBy?: {
+    field: string
+    direction?: 'asc' | 'desc'
+  }
+}
+
+/**
  * Minimal Firestore adapter interface
  * Implement this interface to use with different Firestore setups
  */
 export interface IFirestoreAdapter {
-  getItems: <T>(collection: string) => Promise<Array<T & { id: string }>>
+  getItems: <T>(collection: string, options?: IQueryOptions) => Promise<Array<T & { id: string }>>
   getItemById: <T>(collection: string, id: string) => Promise<T & { id: string }>
   createItemWithId: (collection: string, id: string, data: any) => Promise<string>
   updateItemById: (collection: string, id: string, data: any) => Promise<void>
+  updateItems: (collection: string, data: any, options: IQueryOptions) => Promise<number>
   deleteItemById: (collection: string, id: string) => Promise<any>
+  deleteItems: (collection: string, options: IQueryOptions) => Promise<number>
 }

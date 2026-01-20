@@ -2,10 +2,17 @@
  * Example: Batch Operations
  *
  * Shows how to use Firestore batch writes for better performance
+ *
+ * NOTE: The FirebaseAdminAdapter now has built-in batch methods:
+ * - updateItems(collection, data, options) - updates multiple docs matching filters
+ * - deleteItems(collection, options) - deletes multiple docs matching filters
+ *
+ * These methods use Firestore batches internally, so for most use cases
+ * you can use the adapter directly instead of manual batch operations.
  */
 
 import * as admin from 'firebase-admin'
-import { IMigrationScript } from '../index'
+import { IMigrationScript, IFirestoreAdapter } from '../index'
 
 const BATCH_SIZE = 500 // Firestore batch limit
 
@@ -82,5 +89,80 @@ export const batchMigration: IMigrationScript = {
     }
 
     console.log(`Batch rollback completed: ${totalReverted} users reverted`)
+  },
+}
+
+// ============================================================================
+// Alternative: Using the adapter's built-in batch methods
+// ============================================================================
+
+/**
+ * Simplified migration using adapter's updateItems and deleteItems
+ * These methods handle batching internally
+ */
+export const simplifiedBatchMigration: IMigrationScript = {
+  id: '20250121120200_simplified_batch_update',
+  name: 'Simplified batch update using adapter',
+  description: 'Updates user status using adapter built-in batch methods',
+
+  async up(adapter: IFirestoreAdapter) {
+    console.log('Starting simplified batch migration')
+
+    // Update all pending users to active in one call
+    // The adapter handles batching internally
+    const updatedCount = await adapter.updateItems(
+      'users',
+      {
+        status: 'active',
+        updated_at: new Date(),
+      },
+      {
+        filters: [{ field: 'status', operator: '==', value: 'pending' }],
+      }
+    )
+
+    console.log(`Simplified batch migration completed: ${updatedCount} users updated`)
+  },
+
+  async down(adapter: IFirestoreAdapter) {
+    console.log('Starting simplified batch rollback')
+
+    // Revert all active users to pending
+    const revertedCount = await adapter.updateItems(
+      'users',
+      {
+        status: 'pending',
+        updated_at: new Date(),
+      },
+      {
+        filters: [{ field: 'status', operator: '==', value: 'active' }],
+      }
+    )
+
+    console.log(`Simplified batch rollback completed: ${revertedCount} users reverted`)
+  },
+}
+
+/**
+ * Example: Bulk delete expired sessions
+ */
+export const deleteExpiredSessionsMigration: IMigrationScript = {
+  id: '20250121120300_delete_expired_sessions',
+  name: 'Delete expired sessions',
+  description: 'Removes all expired sessions from the database',
+
+  async up(adapter: IFirestoreAdapter) {
+    console.log('Deleting expired sessions...')
+
+    const deletedCount = await adapter.deleteItems('sessions', {
+      filters: [{ field: 'expiresAt', operator: '<', value: new Date() }],
+    })
+
+    console.log(`Deleted ${deletedCount} expired sessions`)
+  },
+
+  async down() {
+    // Cannot restore deleted sessions
+    console.log('Warning: Deleted sessions cannot be restored')
   },
 }
